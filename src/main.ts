@@ -10,6 +10,7 @@ async function initWebGPU(): Promise<{
 
   if (!adapter) throw new Error("Unable to init adapter");
   const device = await adapter.requestDevice({
+    label: "Ozzy Adapter",
     requiredFeatures: ["texture-compression-bc"],
     requiredLimits: {
       maxStorageBufferBindingSize: adapter.limits.maxStorageBufferBindingSize,
@@ -39,8 +40,11 @@ async function initWebGPU(): Promise<{
   return { adapter, device, context, format };
 }
 
+function initPipeLine(device: GPUDevice) {}
+
 async function run() {
-  await initWebGPU();
+  const { device } = await initWebGPU();
+  initPipeLine(device);
 }
 
 run();

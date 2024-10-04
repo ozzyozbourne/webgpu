@@ -19,7 +19,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["@types/dom-webcodecs", "@webgpu/types"]
+    "types": ["@types/dom-webcodecs", "@webgpu/types", "vite/client"]
   },
   "include": ["src"]
 }
