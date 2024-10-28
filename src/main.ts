@@ -1,4 +1,7 @@
 import "./style.css";
+import vertex from "./shaders/triangle.vert.wgsl?raw";
+import frag from "./shaders/red.frag.wgsl?raw";
+
 async function initWebGPU(): Promise<{
   adapter: GPUAdapter;
   device: GPUDevice;
@@ -40,11 +43,40 @@ async function initWebGPU(): Promise<{
   return { adapter, device, context, format };
 }
 
-function initPipeLine(device: GPUDevice) {}
+async function initPipeLine(
+  device: GPUDevice,
+  format: GPUTextureFormat,
+): Promise<GPURenderPipeline> {
+  const vertexShader = device.createShaderModule({
+    code: vertex,
+  });
+
+  const fragmentShader = device.createShaderModule({
+    code: frag,
+  });
+
+  const discriptor: GPURenderPipelineDescriptor = {
+    layout: "auto",
+    vertex: {
+      module: vertexShader,
+      entryPoint: "main",
+    },
+    fragment: {
+      module: fragmentShader,
+      entryPoint: "main",
+      targets: [{ format }],
+    },
+    primitive: {
+      topology: "triangle-list",
+    },
+  };
+
+  return device.createRenderPipelineAsync(discriptor);
+}
 
 async function run() {
-  const { device } = await initWebGPU();
-  initPipeLine(device);
+  const { device, format } = await initWebGPU();
+  const pipeline = await initPipeLine(device, format);
 }
 
 run();
