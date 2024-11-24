@@ -47,36 +47,60 @@ async function initPipeLine(
   device: GPUDevice,
   format: GPUTextureFormat,
 ): Promise<GPURenderPipeline> {
-  const vertexShader = device.createShaderModule({
-    code: vertex,
-  });
-
-  const fragmentShader = device.createShaderModule({
-    code: frag,
-  });
-
   const discriptor: GPURenderPipelineDescriptor = {
     layout: "auto",
     vertex: {
-      module: vertexShader,
+      module: device.createShaderModule({
+        code: vertex,
+      }),
       entryPoint: "main",
     },
     fragment: {
-      module: fragmentShader,
+      module: device.createShaderModule({
+        code: frag,
+      }),
       entryPoint: "main",
       targets: [{ format }],
     },
     primitive: {
-      topology: "triangle-list",
+      topology: "triangle-strip",
     },
   };
 
   return device.createRenderPipelineAsync(discriptor);
 }
 
+function draw(
+  device: GPUDevice,
+  context: GPUCanvasContext,
+  pipeline: GPURenderPipeline,
+) {
+  const encoder = device.createCommandEncoder();
+  const view = context.getCurrentTexture().createView();
+
+  const renderPassDescriptor: GPURenderPassDescriptor = {
+    colorAttachments: [
+      {
+        view: view,
+        clearValue: { r: 0, g: 0, b: 0, a: 1.0 },
+        loadOp: "clear",
+        storeOp: "store",
+      },
+    ],
+  };
+  const passEncoder = encoder.beginRenderPass(renderPassDescriptor);
+
+  passEncoder.setPipeline(pipeline);
+  passEncoder.draw(6);
+  passEncoder.end();
+
+  device.queue.submit([encoder.finish()]);
+}
+
 async function run() {
-  const { device, format } = await initWebGPU();
+  const { device, context, format } = await initWebGPU();
   const pipeline = await initPipeLine(device, format);
+  draw(device, context, pipeline);
 }
 
 run();
